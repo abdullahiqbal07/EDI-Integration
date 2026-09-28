@@ -1,0 +1,3 @@
+Hello from BeHope EDI Lab.
+
+This is our first AS2 test message.
