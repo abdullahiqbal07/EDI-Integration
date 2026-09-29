@@ -1,20 +1,22 @@
 import fs from "node:fs/promises";
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 const message = await fs.readFile(
   "./src/messages/test-message.txt"
 );
 
 const response = await fetch(
-  "http://localhost:3000/webhooks/as2",
+  "https://localhost:3000/webhooks/as2",
   {
     method: "POST",
     headers: {
       "Content-Type": "application/edi-x12",
       "AS2-From": "BEHOPE",
       "AS2-To": "DRIVE",
-      "Message-ID": "<test-message-001@behope.com>"
+      "Message-ID": "<test-message-001@behope.com>",
     },
-    body: message
+    body: message,
   }
 );
 
