@@ -1,44 +1,31 @@
-import fs from "node:fs/promises";
-import crypto from "node:crypto";
+// src/as2/decrypt.js
 
-const encryptedMessage = await fs.readFile(
-  "./src/messages/encrypted-message.bin"
-);
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
-const encryptedKey = await fs.readFile(
-  "./src/messages/encrypted-key.bin"
-);
+const execFileAsync = promisify(execFile);
 
-const iv = await fs.readFile(
-  "./src/messages/iv.bin"
-);
+export async function decryptCMS({
+  encryptedPath,
+  outputPath,
+  certificatePath,
+  privateKeyPath,
+}) {
+  await execFileAsync("openssl", [
+    "cms",
+    "-decrypt",
+    "-binary",
+    "-inform",
+    "DER",
+    "-in",
+    encryptedPath,
+    "-recip",
+    certificatePath,
+    "-inkey",
+    privateKeyPath,
+    "-out",
+    outputPath,
+  ]);
 
-// Drive's private key
-const drivePrivateKey = await fs.readFile(
-  "./certs/drive/private.key"
-);
-
-// Recover the AES key
-const aesKey = crypto.privateDecrypt(
-  {
-    key: drivePrivateKey,
-    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-    oaepHash: "sha256",
-  },
-  encryptedKey
-);
-
-// Decrypt the message
-const decipher = crypto.createDecipheriv(
-  "aes-256-cbc",
-  aesKey,
-  iv
-);
-
-const decryptedMessage = Buffer.concat([
-  decipher.update(encryptedMessage),
-  decipher.final(),
-]);
-
-console.log("\n===== DECRYPTED MESSAGE =====");
-console.log(decryptedMessage.toString());
+  return outputPath;
+}
