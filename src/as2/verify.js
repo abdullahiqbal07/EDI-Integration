@@ -20,7 +20,10 @@ const signer = crypto.createSign("SHA256");
 signer.update(message);
 signer.end();
 
-const signature = signer.sign(privateKey);
+const signature = await fs.readFile(
+  "./src/messages/signature.txt",
+  "utf8"
+);
 
 const verifier = crypto.createVerify("SHA256");
 
@@ -29,7 +32,8 @@ verifier.end();
 
 const isValid = verifier.verify(
   certificate,
-  signature
+  signature,
+  "base64"
 );
 
 console.log("Signature valid:", isValid);

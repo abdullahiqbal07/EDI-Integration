@@ -16,8 +16,10 @@ signer.end();
 
 const signature = signer.sign(privateKey, "base64");
 
-console.log("\n===== ORIGINAL MESSAGE =====");
-console.log(message.toString());
+await fs.writeFile(
+  "./src/messages/signature.txt",
+  signature
+);
 
-console.log("\n===== SIGNATURE =====");
-console.log(signature);
+console.log("Message signed successfully.");
+console.log("Signature saved to signature.txt");

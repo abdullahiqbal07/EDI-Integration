@@ -2,21 +2,34 @@ import express from "express";
 
 const router = express.Router();
 
-router.post("/as2", express.raw({ type: "*/*" }), (req, res) => {
-  console.log("\n========== AS2 MESSAGE RECEIVED ==========");
+router.post(
+  "/as2",
+  express.raw({ type: "*/*" }),
+  (req, res) => {
+    console.log("\n========== AS2 MESSAGE ==========");
 
-  console.log("Headers:");
-  console.log(req.headers);
+    console.log("\nAS2-From:");
+    console.log(req.headers["as2-from"]);
 
-  console.log("\nBody:");
+    console.log("\nAS2-To:");
+    console.log(req.headers["as2-to"]);
 
-  const body = req.body.toString();
+    console.log("\nMessage-ID:");
+    console.log(req.headers["message-id"]);
 
-  console.log(body);
+    console.log("\nAS2-Version:");
+    console.log(req.headers["as2-version"]);
 
-  console.log("===========================================\n");
+    console.log("\nContent-Type:");
+    console.log(req.headers["content-type"]);
 
-  res.status(200).send("Message received");
-});
+    console.log("\nBody:");
+    console.log(req.body.toString());
+
+    console.log("\n=================================\n");
+
+    res.status(200).send("Message received");
+  }
+);
 
 export default router;
