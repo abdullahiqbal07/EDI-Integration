@@ -5,10 +5,10 @@ const router = express.Router();
 router.post(
   "/as2",
   express.raw({ type: "*/*" }),
-  (req, res) => {
+  async (req, res) => {
     console.log("\n========== AS2 MESSAGE ==========");
 
-    console.log("\nAS2-From:");
+    console.log("AS2-From:");
     console.log(req.headers["as2-from"]);
 
     console.log("\nAS2-To:");
@@ -23,12 +23,12 @@ router.post(
     console.log("\nContent-Type:");
     console.log(req.headers["content-type"]);
 
-    console.log("\nBody:");
-    console.log(req.body.toString());
+    console.log("\nEncrypted body:");
+    console.log(`${req.body.length} bytes`);
 
-    console.log("\n=================================\n");
+    console.log("\n=================================");
 
-    res.status(200).send("Message received");
+    res.status(200).send("AS2 message received");
   }
 );
 
