@@ -1,86 +1,90 @@
 import express from "express";
-import fs from "node:fs/promises";
-import path from "node:path";
-import crypto from "node:crypto";
 
-import { decryptCMS } from "./decrypt.js";
+import { processMessage } from "./processMessage.js";
 
 const router = express.Router();
-
-const TEMP_DIR = "./src/messages/incoming";
 
 router.post(
   "/as2",
   express.raw({ type: "*/*" }),
+
   async (req, res) => {
-    const messageId = req.headers["message-id"];
+    console.log(
+      "\n========== AS2 MESSAGE =========="
+    );
 
-    console.log("\n========== AS2 MESSAGE ==========");
+    console.log(
+      "AS2-From:",
+      req.headers["as2-from"]
+    );
 
-    console.log("AS2-From:", req.headers["as2-from"]);
-    console.log("AS2-To:", req.headers["as2-to"]);
-    console.log("Message-ID:", messageId);
-    console.log("Content-Type:", req.headers["content-type"]);
-    console.log("Body:", req.body.length, "bytes");
+    console.log(
+      "AS2-To:",
+      req.headers["as2-to"]
+    );
+
+    console.log(
+      "Message-ID:",
+      req.headers["message-id"]
+    );
+
+    console.log(
+      "AS2-Version:",
+      req.headers["as2-version"]
+    );
+
+    console.log(
+      "Content-Type:",
+      req.headers["content-type"]
+    );
+
+    console.log(
+      "Body:",
+      req.body.length,
+      "bytes"
+    );
 
     try {
-      await fs.mkdir(TEMP_DIR, {
-        recursive: true,
-      });
+      const result =
+        await processMessage({
+          body: req.body,
+          headers: req.headers,
+        });
 
-      const id = crypto.randomUUID();
-
-      const encryptedPath = path.join(
-        TEMP_DIR,
-        `${id}.p7m`
-      );
-
-      const decryptedPath = path.join(
-        TEMP_DIR,
-        `${id}.mime`
-      );
-
-      await fs.writeFile(
-        encryptedPath,
-        req.body
+      console.log(
+        "\nAS2 processing successful"
       );
 
       console.log(
-        "\nEncrypted message saved:",
-        encryptedPath
-      );
-
-      await decryptCMS({
-        encryptedPath,
-        outputPath: decryptedPath,
-        certificatePath:
-          "./certs/drive/certificate.crt",
-        privateKeyPath:
-          "./certs/drive/private.key",
-      });
-
-      console.log(
-        "CMS decryption successful!"
+        "Message-ID:",
+        result.messageId
       );
 
       console.log(
-        "Decrypted MIME:",
-        decryptedPath
+        "MIC:",
+        result.mic
       );
 
       res
         .status(200)
-        .send("AS2 message decrypted successfully");
+        .set(
+          "Content-Type",
+          result.mdn.contentType
+        )
+        .send(result.mdn.body);
+
     } catch (error) {
       console.error(
         "\nAS2 processing failed:"
       );
 
-      console.error(error.message);
+      console.error(error);
 
       res
         .status(500)
-        .send("AS2 processing failed");
+        .send(
+          "AS2 processing failed"
+        );
     }
   }
 );
